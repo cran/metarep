@@ -23,14 +23,31 @@ metaRvalue.onesided.U <- function (x,u = 2 , comb.fixed = F , comb.random = T ,
   x.fixed.metainf <- NULL
   x.fixed.w <- NULL
   nstudlab <- length(x$studlab)
+  if(!is.numeric(alpha.tilde)){ 
+    alpha.tilde <- 1
+  }else{ 
+      alpha.tilde <- replace(alpha.tilde, alpha.tilde>1, 1 )
+      }
+  
+  available.pvs.after.truncaion <- pnorm(x$zval, lower.tail = (alternative == 'less'))
+  nstudlab.truncation <- sum(available.pvs.after.truncaion<=alpha.tilde)
+  
   if (( u > nstudlab ) | (u < 1) ){
     stop ( 'invalid tuning parameter u ' )
+  }else{
+    if ( u > nstudlab.truncation ){
+      
+      return(list(worst.case = x ,
+                  Side = alternative,
+                  pvalue.onesided =  1 ))
+      message ( paste('Invalid tuning parameter u: less than u studies left after truncation at' , alpha.tilde ))
+    }
   }
   
   
   if ( (! comb.fixed )&( ! comb.random ) ) stop('Desired replicability model must be supplied')
   if(!(alternative %in% c('less','greater'))) stop('Supply informative alternative ( "less" or "greater" )')
-
+  
   ## fixed-effects replicability analysis. 
   worst.case.fixed <- studies_subsets <- NULL
   if ( comb.fixed ){
@@ -44,7 +61,7 @@ metaRvalue.onesided.U <- function (x,u = 2 , comb.fixed = F , comb.random = T ,
       studies_subsets <- rbind( 1:nstudlab , rep(NA , nstudlab) )
       rownames(studies_subsets) <- c('s1' , 'rvalue' )
       studies_subsets['rvalue' , ] <- pnorm( x$zval , lower.tail = (alternative=='less'))
-     
+      
       # derive the line of worst case studies 
       k = max(which.max(studies_subsets['rvalue',])) # studies column pointer. 
       
@@ -74,7 +91,7 @@ metaRvalue.onesided.U <- function (x,u = 2 , comb.fixed = F , comb.random = T ,
     }
     # derive the line of worst case study 
     k = max(which.max(studies_subsets['rvalue',])) # studies column pointer. 
-  
+    
     worst.case.studies = x$studlab[ studies_subsets[-c(nrow(studies_subsets)) ,k] ]
     worst.case.studies = which( x$data$.studlab %in% worst.case.studies )
     
@@ -96,8 +113,15 @@ metaRvalue.onesided.U <- function (x,u = 2 , comb.fixed = F , comb.random = T ,
                 Side = alternative,
                 pvalue.onesided =  pvo$p.value ))
   }
-  if( u == nstudlab ){
-    pvo <- max(pvs.all)
+  if( u > sum(pvs.all<=alpha.tilde) ){
+    return(list(worst.case = x ,
+                Side = alternative,
+                pvalue.onesided =  1 ))
+  }
+  
+  if( u == sum(pvs.all<=alpha.tilde) ){
+    pvs.all <- replace(pvs.all,pvs.all>alpha.tilde, NA)
+    pvo <- max(pvs.all, na.rm = T)
     worst.case.studies <- x$studlab[which.max(pvs.all)]
     worst.case.studies <- which( x$data$.studlab %in% worst.case.studies )
     worst.case <- meta::update.meta(x ,subset = worst.case.studies )
@@ -114,12 +138,8 @@ metaRvalue.onesided.U <- function (x,u = 2 , comb.fixed = F , comb.random = T ,
     
   }
   
-    if(alternative == 'greater'){
-      wsf <- which( (nstudlab+1-rank(zval.all)) >= u )
-    }else{
-      wsf <- which( rank(zval.all) >= u )
-    }
-    
+  wsf <- which( order(pvs.all) >= u )
+  
   worst.studies.fisher <- x$studlab[ wsf ]
   worst.studies.fisher <- which( (x$data$.studlab %in% worst.studies.fisher) )
   worst.case <- meta::update.meta(x ,subset = worst.studies.fisher )
