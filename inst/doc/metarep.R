@@ -2,7 +2,7 @@
 #  devtools::install_github( "guido-s/meta"    , force=T )
 #  devtools::install_github( "IJaljuli/metarep", force=T )
 
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = " "

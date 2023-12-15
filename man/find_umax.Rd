@@ -24,14 +24,21 @@ find_umax(
 \item{common.effect}{Use common.effect = FALSE (default) for replicability-analysis combining with no assumptions (Pearson or truncated-Pearson test).}
 }
 \value{
-An object of class list reporting the bounds on the number of studies with a positive or negative effect, as follows: 
-\itemize{
-\item{worst.case}{A charachter vector of the names of \code{n-u_{max}+1} studies at which the the \code{r(u_{max})-}value is computed.}
-\item{side}{The direction of the replicated signal in the `worst.case` studies. 'less' if the effect is negative, 'greater' if positive.}
-\item{u_max}{The bound on the number of studies with either a positive or a negative effect.}
-\item{r-value}{The `u-out-of-n` \code{r(u)-}-value calculated with u=u_max.}
-\item{Replicability_Analysis}{Report of the replicability lower bounds on the number of studies with negative effect and with positive effect.}
-}
+An object of class list reporting the bounds on the number of
+studies with a positive or negative effect, as follows:
+\item{worst.case}{A charachter vector of the names of
+\code{n-u_{max}+1} studies at which the the \code{r(u_{max})-}value
+is computed.}
+\item{side}{The direction of the replicated signal in the
+'worst.case' studies. 'less' if the effect is negative, 'greater'
+if positive.}
+\item{u_max}{The bound on the number of studies with either a
+positive or a negative effect.}
+\item{r-value}{The 'u-out-of-n' \code{r(u)-}-value calculated with
+u=u_max.}
+\item{Replicability_Analysis}{Report of the replicability lower
+bounds on the number of studies with negative effect and with
+positive effect.}
 }
 \description{
 lower bounds on the number of studies with increased and\\ or decreased effect.
@@ -41,10 +48,10 @@ n.i.1 <- c( 20, 208, 24, 190, 58, 36, 51)
 a.i <- c( 2,79,0,98,15,34,9) 
 n.i.2 <- c( 20, 119, 22, 185, 29, 51, 47)
 c.i <- c(9,106,14,98,12,49,9) 
-m1 <- meta::metabin( event.e = a.i,n.e = n.i.1,
-                     event.c = c.i,n.c = n.i.2,
-                     studlab = paste('Study',1:7), sm = 'OR',
-                     comb.fixed = FALSE, comb.random = TRUE )
+m1 <- metabin( event.e = a.i,n.e = n.i.1,
+               event.c = c.i,n.c = n.i.2,
+               studlab = paste('Study',1:7), sm = 'OR',
+               common = FALSE, random = TRUE )
 find_umax(m1 , common.effect = FALSE, alternative = 'two-sided',
           t = 0.05 , confidence = 0.95 )        
 }
